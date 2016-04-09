@@ -4,40 +4,50 @@ import Battlement from "./scenes/battlement"
 import Player from "./avatars/player"
 import Box from "./avatars/box"
 
+import map from "lodash/map"
+
+import engine from "./engine"
+
 let {Point} = Isomer
 let canvas = document.getElementById("canvas")
 
-let boardwidth = 5, boardlength = 10
+let level = {
+	boardwidth: 5,
+	boardlength: 10
+}
 
-let plrx = 0, plry = 2
+let scene = Battlement(Point(0,0,0),level.boardlength,level.boardwidth);
 
-let entities = [
-	[Box,2,2,2,2], // Avatar, x, y, xlength, ylength
-	[Box,7,1,2,2]
-];
-
-let isPointOk = (x,y)=> {
-	return x >= 0 && x < boardlength && y >= 0 && y < boardwidth && entities.every(e=>{
-		return !(x>=e[1] && x<e[1]+e[3] && y>=e[2] && y<e[2]+e[4])
-	});
+let entities = {
+	box1: [Box,2,2,2,2], // Avatar, x, y, xlength, ylength, cons
+	box2: [Box,7,1,2,2],
+	plr:  [Player,0,2,1,1]
 }
 
 let render = ()=> {
 	canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
 	let iso = new Isomer(canvas)
-	iso.add(Battlement(Point(0,0,0),boardlength,boardwidth))
-	iso.drawAvatars([Player(Point(plrx,plry,0))].concat(entities.map(function(e){
+	iso.add(scene.background)
+	iso.drawAvatars(map(entities,function(e,name){
 		return e[0](Point(e[1],e[2],0));
-	})))
+	}))
+	iso.add(scene.foreground)
 }
 
 window.addEventListener("keydown",function(e){
-	var code = e.which || e.keyCode;
 	switch(e.which || e.keyCode){
-		case 37: isPointOk(plrx,plry+1) && plry++; break; // left
-		case 38: isPointOk(plrx+1,plry) && plrx++; break; // up
-		case 39: isPointOk(plrx,plry-1) && plry--; break; // right
-		case 40: isPointOk(plrx-1,plry) && plrx--; break; // down
+		case 37: 
+			entities = engine.applyConsequences( engine.getMoveConsequences('plr',1,level,entities), entities );
+			break;
+		case 38:
+			entities = engine.applyConsequences( engine.getMoveConsequences('plr',2,level,entities), entities );
+			break;
+		case 39:
+			entities = engine.applyConsequences( engine.getMoveConsequences('plr',3,level,entities), entities );
+			break;
+		case 40:
+			entities = engine.applyConsequences( engine.getMoveConsequences('plr',4,level,entities), entities );
+			break;
 	}
 	render()
 })

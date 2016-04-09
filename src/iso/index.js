@@ -33,11 +33,9 @@ Isomer.prototype.add = function(item, baseColor) {
 };
 
 Isomer.prototype.drawAvatars = function(avatars){
-	console.log("AVATAAARS!",avatars)
 	var sorted = avatars.sort(function(a1,a2){
 		return a1.x+a1.y < a2.x+a2.y ? 1 : a1.x+a1.y > a2.x+a2.y ? -1 : a1.depth < a2.depth ? 1 : -1;
 	})
-	console.log("SORT",sorted)
 	sorted.map(function(i){
 		this.add(i);
 	}.bind(this));
