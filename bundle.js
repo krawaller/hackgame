@@ -58,38 +58,52 @@
 
 	var _player2 = _interopRequireDefault(_player);
 
+	var _box = __webpack_require__(15);
+
+	var _box2 = _interopRequireDefault(_box);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var Point = _iso2.default.Point;
 
 	var canvas = document.getElementById("canvas");
 
-	var boardwidth = 5;
-	var boardlength = 10;
+	var boardwidth = 5,
+	    boardlength = 10;
 
-	var plrx = 0;
-	var plry = 2;
+	var plrx = 0,
+	    plry = 2;
+
+	var entities = [[_box2.default, 2, 2, 2, 2], // Avatar, x, y, xlength, ylength
+	[_box2.default, 7, 1, 2, 2]];
+
+	var isPointOk = function isPointOk(x, y) {
+		return x >= 0 && x < boardlength && y >= 0 && y < boardwidth && entities.every(function (e) {
+			return !(x >= e[1] && x < e[1] + e[3] && y >= e[2] && y < e[2] + e[4]);
+		});
+	};
 
 	var render = function render() {
 		canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
 		var iso = new _iso2.default(canvas);
 		iso.add((0, _battlement2.default)(Point(0, 0, 0), boardlength, boardwidth));
-		iso.add((0, _player2.default)(Point(plrx, plry, 0)));
+		iso.drawAvatars([(0, _player2.default)(Point(plrx, plry, 0))].concat(entities.map(function (e) {
+			return e[0](Point(e[1], e[2], 0));
+		})));
 	};
 
 	window.addEventListener("keydown", function (e) {
 		var code = e.which || e.keyCode;
 		switch (e.which || e.keyCode) {
 			case 37:
-				plry = Math.min(plry + 1, boardwidth - 1);break; // left
+				isPointOk(plrx, plry + 1) && plry++;break; // left
 			case 38:
-				plrx = Math.min(plrx + 1, boardlength - 1);break; // up
+				isPointOk(plrx + 1, plry) && plrx++;break; // up
 			case 39:
-				plry = Math.max(plry - 1, 0);break; // right
+				isPointOk(plrx, plry - 1) && plry--;break; // right
 			case 40:
-				plrx = Math.max(plrx - 1, 0);break; // down
+				isPointOk(plrx - 1, plry) && plrx--;break; // down
 		}
-		console.log("CODE", code);
 		render();
 	});
 
@@ -142,6 +156,17 @@
 				this._addPath(paths[j], item.color || baseColor);
 			}
 		}
+	};
+
+	_isomer2.default.prototype.drawAvatars = function (avatars) {
+		console.log("AVATAAARS!", avatars);
+		var sorted = avatars.sort(function (a1, a2) {
+			return a1.x + a1.y < a2.x + a2.y ? 1 : a1.x + a1.y > a2.x + a2.y ? -1 : a1.depth < a2.depth ? 1 : -1;
+		});
+		console.log("SORT", sorted);
+		sorted.map(function (i) {
+			this.add(i);
+		}.bind(this));
 	};
 
 	var Point = _isomer2.default.Point;
@@ -1141,8 +1166,14 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var Player = function Player(origin) {
-		var ret = new _iso.Shape.Cylinder(origin.translate(0.5, 0.5, 0), 0.5, 0, 3);
-		ret.color = new _iso.Color(0, 255, 0);
+		var body = new _iso.Shape.Cylinder(origin.translate(0.5, 0.5, 0), 0.5, 0, 3);
+		body.color = new _iso.Color(0, 255, 0);
+		var hat = new _iso.Shape.Pyramid(origin.translate(0, 0, 3));
+		hat.color = new _iso.Color(255, 0, 0);
+		var ret = new _iso.Collection([body, hat]);
+		ret.x = origin.x;
+		ret.y = origin.y;
+		ret.depth = 1;
 		return ret;
 	};
 
@@ -1165,6 +1196,29 @@
 	};
 
 	exports.default = Pillar;
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _iso = __webpack_require__(1);
+
+	var Box = function Box(origin) {
+		var ret = new _iso.Shape.Prism(origin, 2, 2, 2);
+		ret.color = new _iso.Color(139, 69, 19);
+		ret.x = origin.x;
+		ret.y = origin.y;
+		ret.depth = 2;
+		return ret;
+	};
+
+	exports.default = Box;
 
 /***/ }
 /******/ ]);
